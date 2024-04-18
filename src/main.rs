@@ -44,7 +44,7 @@ fn main() {
             let timestamp = now.duration_since(UNIX_EPOCH).unwrap().as_secs();
             let my_jwt: NacosJWT = NacosJWT {
                 sub: user.clone(),
-                exp: timestamp + 3600,
+                exp: timestamp + 3600*12,
             };
             let token = encode(
                 &Header::default(),
