@@ -2,7 +2,11 @@ extern crate serde;
 extern crate serde_json;
 
 use base64::engine::general_purpose;
-use base64::{Engine as _, alphabet, engine::{self}};
+use base64::{
+    alphabet,
+    engine::{self},
+    Engine as _,
+};
 use clap::{Arg, Command};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
@@ -27,24 +31,22 @@ fn main() {
                     .short('u')
                     .long("user")
                     .default_value("nacos"),
-            );
+            )
+            .arg(Arg::new("addtime").short('t').long("addtime").default_value("12"));
 
     let m = app.get_matches();
     if let Some(user) = m.get_one::<String>("user") {
         if let Some(key) = m.get_one::<String>("key") {
-
+          if let Some(addtime) = m.get_one::<String>("addtime"){
             let mut decoded_key = Vec::<u8>::new();
 
-            CUSTOM_ENGINE.decode_vec(
-                key,
-                &mut decoded_key,
-            ).unwrap();
+            CUSTOM_ENGINE.decode_vec(key, &mut decoded_key).unwrap();
 
             let now = SystemTime::now();
             let timestamp = now.duration_since(UNIX_EPOCH).unwrap().as_secs();
             let my_jwt: NacosJWT = NacosJWT {
                 sub: user.clone(),
-                exp: timestamp + 3600*12,
+                exp: timestamp + 3600 * addtime.parse::<u64>().unwrap(),
             };
             let token = encode(
                 &Header::default(),
@@ -59,6 +61,7 @@ fn main() {
             println!("user is {}", user);
             println!("key is {}", key);
             println!("nacos jwt is \nAuthorization: Bearer {}", token);
+          }
         };
     };
 }
